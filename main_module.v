@@ -12,11 +12,12 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset);
 
     // button debounce
     wire db_clock;
-    wire q1, q2, q0;
-    debounce_clock u1(clock, db_clock);
-    dffe_ref d0(q0, in2, clock, db_clock, 1'b0);
-    dffe_ref d1(q1, q0, clock, db_clock, 1'b0);
-    dffe_ref d2(q2, q1, clock, db_clock, 1'b0);
+    debounce_clock db_clock_module(clock, db_clock);
+
+    wire in2_active, in1_active, in0_active;
+    input_db in2_db(in2_active, in2, clock, db_clock);
+    input_db in1_db(in1_active, in1, clock, db_clock);
+    input_db in0_db(in0_active, in0, clock, db_clock);
     
     always @(posedge clock) begin
         if(reset) begin
@@ -25,8 +26,12 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset);
         end else
             refresh_counter <= refresh_counter + 1; 
 
-        if(q1 & ~q2 & db_clock)
+        if(in2_active)
             current <= current + 1;
+        if(in1_active)
+            current <= current + 2;
+        if(in0_active)
+            current <= current + 3;
     end
     assign stage_counter = refresh_counter[19:18];
     
