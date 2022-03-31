@@ -1,5 +1,5 @@
 module input_db(out, in, clock, db_clock);
-    input in;
+    input in, clock, db_clock;
     output out;
 
     wire q2, q1, q0;
