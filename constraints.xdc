@@ -5,9 +5,12 @@ set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock];
 set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports {reset}];
 
 # inputs
-set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {in2}];
-set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33} [get_ports {in1}];
-set_property -dict {PACKAGE_PIN M17 IOSTANDARD LVCMOS33} [get_ports {in0}];
+set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {in2}];
+set_property -dict {PACKAGE_PIN U11 IOSTANDARD LVCMOS33} [get_ports {in1}];
+set_property -dict {PACKAGE_PIN U12 IOSTANDARD LVCMOS33} [get_ports {in0}];
+
+set_property -dict {PACKAGE_PIN J15 IOSTANDARD LVCMOS33} [get_ports {in_buy}];
+set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports {is_insufficient}];
 
 set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {seg_cat[6]}];
 set_property -dict {PACKAGE_PIN R10 IOSTANDARD LVCMOS33} [get_ports {seg_cat[5]}];
