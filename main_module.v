@@ -4,6 +4,10 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, in_buy, is_insu
     reg[31:0] current = 0;
     reg[31:0] current_digit;
 
+    reg[31:0] nickel_change = 1;
+    reg[31:0] dime_change = 2;
+    reg[31:0] quarter_change = 3;
+
     output reg[7:0] seg_an;
     output reg[6:0] seg_cat;
     
