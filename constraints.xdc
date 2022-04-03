@@ -4,13 +4,12 @@ set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock];
 # reset
 set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports {reset}];
 
-# set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {motor_in1}];
-# set_property -dict {PACKAGE_PIN M17 IOSTANDARD LVCMOS33} [get_ports {motor_in0}];
-# set_property -dict {PACKAGE_PIN D14 IOSTANDARD LVCMOS33} [get_ports {motor_out}];
-
 
 set_property -dict {PACKAGE_PIN A13 IOSTANDARD LVCMOS33} [get_ports {buy1_in}];
 set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33} [get_ports {buy0_in}];
+set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33} [get_ports {motor_in1}];
+set_property -dict {PACKAGE_PIN B18 IOSTANDARD LVCMOS33} [get_ports {motor_in0}];
+set_property -dict {PACKAGE_PIN A14 IOSTANDARD LVCMOS33} [get_ports {motor_out}];
 
 set_property -dict {PACKAGE_PIN H4 IOSTANDARD LVCMOS33} [get_ports {cost_in3}];
 set_property -dict {PACKAGE_PIN H1 IOSTANDARD LVCMOS33} [get_ports {cost_in2}];

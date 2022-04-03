@@ -1,4 +1,4 @@
-module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_in, is_insufficient, cost_in3, cost_in2, cost_in1, cost_in0);
+module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_in, is_insufficient, cost_in3, cost_in2, cost_in1, cost_in0, motor_in1, motor_in0, motor_out);
     input clock, reset, in2, in1, in0, buy1_in, buy0_in, cost_in3, cost_in2, cost_in1, cost_in0;
     
     reg[31:0] current = 0;
@@ -15,14 +15,14 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
     reg[20:0] refresh_counter;
     wire[3:0] stage_counter;
     
-    // output motor_out;
-    // input motor_in1, motor_in0;
+    output motor_out;
+    input motor_in1, motor_in0;
     
     // debounce logic for coin inputs
     wire db_clock;
     debounce_clock db_clock_module(clock, db_clock);
 
-    wire is_nickel, is_dime, is_quarter, buy1_attempted, buy0_attempted; //inc_motor, dec_motor;
+    wire is_nickel, is_dime, is_quarter, buy1_attempted, buy0_attempted, inc_motor, dec_motor;
     wire cost1_inc, cost1_dec, cost0_inc, cost0_dec;
     input_db nickel_db(is_nickel, in2, clock, db_clock);
     input_db dime_db(is_dime, in1, clock, db_clock);
@@ -33,19 +33,19 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
     input_db cost1_dec_db(cost1_dec, cost_in2, clock, db_clock);
     input_db cost0_inc_db(cost0_inc, cost_in1, clock, db_clock);
     input_db cost0_dec_db(cost0_dec, cost_in0, clock, db_clock);
-    // input_db inc_m_db(inc_motor, motor_in1, clock, db_clock);
-    // input_db dec_m_db(dec_motor, motor_in0, clock, db_clock);
+    input_db inc_m_db(inc_motor, motor_in1, clock, db_clock);
+    input_db dec_m_db(dec_motor, motor_in0, clock, db_clock);
     
-    // motor stuff
-    // reg[7:0] motor_position = 60;
-    // always @(posedge clock) begin
-    //     if(inc_motor)
-    //         motor_position <= 60;
-    //     if(dec_motor)
-    //         motor_position <= 240;
-    // end
+    // motor control
+    reg[1:0] motor_position;
+    always @(posedge clock) begin
+        if(inc_motor)
+            motor_position <= 2'b00;
+        if(dec_motor)
+            motor_position <= 2'b01;
+    end
 
-    // servo_controller s_control(clock, reset, motor_position, motor_out);
+    servo_controller s_control(clock, motor_position, motor_out);
 
     // buy modules
     wire[31:0] cost = 100;

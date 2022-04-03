@@ -1,31 +1,29 @@
 module servo_controller (
-  input clk,
-  input rst,
-  input [7:0] position,
-  output servo
-  );
-	
-  reg pwm_q, pwm_d;
-  reg [19:0] ctr_q, ctr_d;
-  assign servo = pwm_q;
-  //position (0-255) maps to 50,000-100,000 (which corresponds to 1ms-2ms @ 50MHz)
-  //this is approximately (position+165)<<8
-  //The servo output is set by comparing the position input with the value of the counter (ctr_q)
-  always @(*) begin
-    ctr_d = ctr_q + 1'b1;
-    if (position + 9'd165 > ctr_q[19:8]) begin
-      pwm_d = 1'b1;
-    end else begin
-      pwm_d = 1'b0;
+  input clock,  //base on 100MHZ clock
+    input [1:0] position, //left(10), right(01), neutral(00,11)
+    output pwm_out
+    );
+    
+    localparam MS_20 = 24'h1e8480;      //20ms from 100MHZ clock
+    localparam MIDDLE = 24'h24f90;      // 1.5 ms  middle
+    localparam ALLRIGHT = 24'h30d40;    // 2ms all the way right
+    localparam ALLLEFT = 24'h186a0;     //1 ms all the way left
+
+    reg [23:0] count;
+    reg pulse;
+
+    initial count = 0;
+    assign pwm_out = pulse;
+
+    always@(posedge clock) begin
+        count <= (count == MS_20) ? 0 : count + 1'b1; /* 20 ms period */
+    end    
+
+    always@(*) begin
+        case(position)
+            2'b01: pulse = (count <= ALLRIGHT); //right all the way
+            2'b00: pulse = (count <= ALLLEFT); //left all the way
+            default: pulse = (count <= MIDDLE);  //center 
+        endcase
     end
-  end
-	
-  always @(posedge clk) begin
-    if (rst) begin
-      ctr_q <= 1'b0;
-    end else begin
-      ctr_q <= ctr_d;
-    end
-    pwm_q <= pwm_d;
-  end
 endmodule
