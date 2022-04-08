@@ -41,11 +41,11 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
     reg[26:0] sec_counter;
     
     always @(posedge clock) begin
-        if(step_motor1 || step_motor2) begin
+        if(buy0_attempted & current >= cost0_current) begin
             sec_counter <= 0;
             motor_position <= 2'b01;
         end else begin
-            if(sec_counter>=99999999) begin
+            if(sec_counter>=49999999) begin
                 sec_counter <= 0;
                 motor_position <= 2'b00;
             end else
