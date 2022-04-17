@@ -12,53 +12,96 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
     output reg[15:0] seg_an;
     output reg[6:0] seg_cat;
     
-    reg[20:0] refresh_counter;
+    reg[19:0] refresh_counter;
     wire[3:0] stage_counter;
     
-    output motor_out;
+    output[2:0] motor_out;
     input motor_in1, motor_in0;
     
     // debounce logic for coin inputs
     wire db_clock;
     debounce_clock db_clock_module(clock, db_clock);
 
-    wire is_nickel, is_dime, is_quarter, buy1_attempted, buy0_attempted, step_motor1, step_motor2;
+    wire is_nickel, is_dime, is_quarter, buy1_attempted, buy0_attempted, dispense_change, step_motor2;
     wire cost1_inc, cost1_dec, cost0_inc, cost0_dec;
-    input_db nickel_db(is_nickel, in2, clock, db_clock);
-    input_db dime_db(is_dime, in1, clock, db_clock);
-    input_db quarter_db(is_quarter, in0, clock, db_clock);
+    input_db nickel_db(is_nickel, ~in2, clock, db_clock);
+    input_db dime_db(is_dime, ~in1, clock, db_clock);
+    input_db quarter_db(is_quarter, ~in0, clock, db_clock);
     input_db buy1_db(buy1_attempted, buy1_in, clock, db_clock);
     input_db buy0_db(buy0_attempted, buy0_in, clock, db_clock);
     input_db cost1_inc_db(cost1_inc, cost_in3, clock, db_clock);
     input_db cost1_dec_db(cost1_dec, cost_in2, clock, db_clock);
     input_db cost0_inc_db(cost0_inc, cost_in1, clock, db_clock);
     input_db cost0_dec_db(cost0_dec, cost_in0, clock, db_clock);
-    input_db inc_m_db(step_motor1, motor_in1, clock, db_clock);
+    input_db inc_m_db(dispense_change, motor_in1, clock, db_clock);
     input_db dec_m_db(step_motor2, motor_in0, clock, db_clock);
 
     // motor control
-    reg[1:0] motor_position;
-    reg[26:0] sec_counter;
-    
-    always @(posedge clock) begin
-        if(buy0_attempted & current >= cost0_current) begin
-            sec_counter <= 0;
-            motor_position <= 2'b01;
-        end else begin
-            if(sec_counter>=49999999) begin
-                sec_counter <= 0;
-                motor_position <= 2'b00;
-            end else
-                sec_counter <= sec_counter + 1;
-        end
-    end
-    servo_controller s_control(clock, motor_position, motor_out);
+    reg[1:0] motor_position1;
+    reg[1:0] motor_position2;
+    reg[1:0] motor_position3;
+    reg[26:0] sec_counter1;
+    reg[26:0] sec_counter2;
+    reg[26:0] sec_counter3;
+    reg dispensing;
+
+    servo_controller s_control1(clock, motor_position1, motor_out[2]);
+    servo_controller s_control2(clock, motor_position2, motor_out[1]);
+    servo_controller s_control3(clock, motor_position3, motor_out[0]);
 
     // buy modules
     wire[31:0] cost = 100;
     output reg is_insufficient;
     
     always @(posedge clock) begin
+        if(buy0_attempted & current >= cost0_current) begin
+            sec_counter1 <= 0;
+            motor_position1 <= 2'b01;
+        end else begin
+            if(sec_counter1>=49999999) begin
+                sec_counter1 <= 0;
+                motor_position1 <= 2'b00;
+            end else
+                sec_counter1 <= sec_counter1 + 1;
+        end
+        
+        if(buy1_attempted & current >= cost1_current) begin
+            sec_counter2 <= 0;
+            motor_position2 <= 2'b01;
+        end else begin
+            if(sec_counter2>=49999999) begin
+                sec_counter2 <= 0;
+                motor_position2 <= 2'b00;
+            end else
+                sec_counter2 <= sec_counter2 + 1;
+        end
+
+        if(dispense_change & current > 0) begin
+            sec_counter3 <= 0;
+            motor_position3 <= 2'b01;
+            dispensing <= 1'b1;
+        end else begin
+            if(sec_counter3>=49999999) begin
+                sec_counter3 <= 0;
+                if(dispensing) begin
+                    if(motor_position3 === 2'b01) begin
+                        motor_position3 <= 2'b00;
+                        current <= current - 5;
+                    end else begin
+                        if(current > 0)
+                            motor_position3 <= 2'b01;
+                        else
+                            dispensing <= 1'b0;
+                    end
+                end else
+                    motor_position3 <= 2'b00;
+            end else
+                sec_counter3 <= sec_counter3 + 1;
+        end
+
+
+
+        
         if(reset) begin
             refresh_counter <= 0;
             current <= 0;
@@ -69,7 +112,7 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
         if(is_nickel)
             current <= current + 5;
         if(is_dime)
-            current <= current + 10;
+            current <= current + 10; 
         if(is_quarter)
             current <= current + 25;
         if(is_nickel | is_dime | is_quarter)
@@ -98,7 +141,7 @@ module main_module(seg_an, seg_cat, clock, in2, in1, in0, reset, buy1_in, buy0_i
         if(cost0_dec && cost0_current >= 5)
             cost0_current <= cost0_current - 5;
     end
-    assign stage_counter = refresh_counter[20:17];
+    assign stage_counter = refresh_counter[19:16];
     
     always @(*) begin
         case(stage_counter)
